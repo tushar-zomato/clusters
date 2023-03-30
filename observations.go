@@ -8,48 +8,66 @@ import (
 // Coordinates is a slice of float64
 type Coordinates []float64
 
-// Observation is a data point (float64 between 0.0 and 1.0) in n dimensions
-type Observation interface {
-	Coordinates() Coordinates
-	Distance(point Coordinates) float64
-}
-
-// Observations is a slice of observations
-type Observations []Observation
-
-// Coordinates implements the Observation interface for a plain set of float64
-// coordinates
-func (c Coordinates) Coordinates() Coordinates {
-	return Coordinates(c)
-}
-
 // Distance returns the euclidean distance between two coordinates
 func (c Coordinates) Distance(p2 Coordinates) float64 {
 	var r float64
 	for i, v := range c {
 		r += math.Pow(v-p2[i], 2)
 	}
+
 	return r
+}
+
+// Observation is a data point (float64 between 0.0 and 1.0) in n dimensions
+type Observation interface {
+	Coordinates() Coordinates
+	Weight() int
+}
+
+// Observations is a slice of observations
+type Observations []Observation
+
+// WeightedObservation implements Observation
+type WeightedObservation struct {
+	c      Coordinates
+	weight int
+}
+
+// Coordinates implements the Observation interface for a plain set of float64
+// coordinates
+func (o WeightedObservation) Coordinates() Coordinates {
+	return o.c
+}
+
+func (o WeightedObservation) Weight() int {
+	if o.weight <= 0 {
+		return 1
+	}
+
+	return o.weight
 }
 
 // Center returns the center coordinates of a set of Observations
 func (c Observations) Center() (Coordinates, error) {
-	var l = len(c)
-	if l == 0 {
+	if len(c) == 0 {
 		return nil, fmt.Errorf("there is no mean for an empty set of points")
 	}
 
 	cc := make([]float64, len(c[0].Coordinates()))
+	totalPoints := 0
 	for _, point := range c {
 		for j, v := range point.Coordinates() {
-			cc[j] += v
+			cc[j] += v * float64(point.Weight())
 		}
+
+		totalPoints += point.Weight()
 	}
 
 	var mean Coordinates
 	for _, v := range cc {
-		mean = append(mean, v/float64(l))
+		mean = append(mean, v/float64(totalPoints))
 	}
+
 	return mean, nil
 }
 
@@ -59,17 +77,18 @@ func AverageDistance(o Observation, observations Observations) float64 {
 	var l int
 
 	for _, observation := range observations {
-		dist := o.Distance(observation.Coordinates())
+		dist := o.Coordinates().Distance(observation.Coordinates())
 		if dist == 0 {
 			continue
 		}
 
-		l++
-		d += dist
+		l += observation.Weight()
+		d += dist * float64(observation.Weight())
 	}
 
 	if l == 0 {
 		return 0
 	}
+
 	return d / float64(l)
 }

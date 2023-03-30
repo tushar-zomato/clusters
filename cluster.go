@@ -21,6 +21,7 @@ func New(k int, dataset Observations) (Clusters, error) {
 	if len(dataset) == 0 || len(dataset[0].Coordinates()) == 0 {
 		return c, fmt.Errorf("there must be at least one dimension in the data set")
 	}
+
 	if k == 0 {
 		return c, fmt.Errorf("k must be greater than 0")
 	}
@@ -36,6 +37,7 @@ func New(k int, dataset Observations) (Clusters, error) {
 			Center: p,
 		})
 	}
+
 	return c, nil
 }
 
@@ -51,7 +53,7 @@ func (c Clusters) Nearest(point Observation) int {
 
 	// Find the nearest cluster for this data point
 	for i, cluster := range c {
-		d := point.Distance(cluster.Center)
+		d := point.Coordinates().Distance(cluster.Center)
 		if dist < 0 || d < dist {
 			dist = d
 			ci = i
@@ -111,6 +113,7 @@ func (c Cluster) PointsInDimension(n int) Coordinates {
 	for _, p := range c.Observations {
 		v = append(v, p.Coordinates()[n])
 	}
+
 	return v
 }
 
@@ -121,5 +124,6 @@ func (c Clusters) CentersInDimension(n int) Coordinates {
 	for _, cl := range c {
 		v = append(v, cl.Center[n])
 	}
+
 	return v
 }

@@ -8,7 +8,7 @@ func TestDistance(t *testing.T) {
 	p1 := Coordinates{2, 2}
 	p2 := Coordinates{3, 5}
 
-	d := p1.Distance(p2.Coordinates())
+	d := p1.Distance(p2)
 	if d != 10 {
 		t.Errorf("Expected distance of 10, got %f", d)
 	}
@@ -16,9 +16,9 @@ func TestDistance(t *testing.T) {
 
 func TestCenter(t *testing.T) {
 	var o Observations
-	o = append(o, Coordinates{1, 1})
-	o = append(o, Coordinates{3, 2})
-	o = append(o, Coordinates{5, 3})
+	o = append(o, WeightedObservation{c: Coordinates{1, 1}, weight: 5})
+	o = append(o, WeightedObservation{c: Coordinates{3, 2}, weight: 1})
+	o = append(o, WeightedObservation{c: Coordinates{5, 3}, weight: 10})
 
 	m, err := o.Center()
 	if err != nil {
@@ -26,19 +26,19 @@ func TestCenter(t *testing.T) {
 		return
 	}
 
-	if m[0] != 3 || m[1] != 2 {
+	if m[0] != 3.625 || m[1] != 2.3125 {
 		t.Errorf("Expected coordinates [3 2], got %v", m)
 	}
 }
 
 func TestAverageDistance(t *testing.T) {
 	var o Observations
-	o = append(o, Coordinates{1, 1})
-	o = append(o, Coordinates{3, 2})
-	o = append(o, Coordinates{5, 3})
+	o = append(o, WeightedObservation{c: Coordinates{1, 1}, weight: 5})
+	o = append(o, WeightedObservation{c: Coordinates{3, 2}, weight: 1})
+	o = append(o, WeightedObservation{c: Coordinates{5, 3}, weight: 9})
 
 	d := AverageDistance(o[0], o[1:])
-	if d != 12.5 {
+	if d != 18.5 {
 		t.Errorf("Expected average distance of 12.5, got %v", d)
 	}
 
@@ -50,9 +50,9 @@ func TestAverageDistance(t *testing.T) {
 
 func TestClusters(t *testing.T) {
 	var o Observations
-	o = append(o, Coordinates{1, 1})
-	o = append(o, Coordinates{3, 2})
-	o = append(o, Coordinates{5, 3})
+	o = append(o, WeightedObservation{c: Coordinates{1, 1}, weight: 1})
+	o = append(o, WeightedObservation{c: Coordinates{3, 2}, weight: 1})
+	o = append(o, WeightedObservation{c: Coordinates{5, 3}, weight: 1})
 
 	c, err := New(2, o)
 	if err != nil {
@@ -78,6 +78,7 @@ func TestClusters(t *testing.T) {
 	if nc != 1 {
 		t.Errorf("Expected neighbouring cluster 1, got %d", nc)
 	}
+
 	if d != 12.5 {
 		t.Errorf("Expected neighbouring cluster distance 12.5, got %f", d)
 	}
@@ -85,6 +86,7 @@ func TestClusters(t *testing.T) {
 	if pp := c[1].PointsInDimension(0); pp[0] != 3 || pp[1] != 5 {
 		t.Errorf("Expected [3 5] as points in dimension 0, got %v", pp)
 	}
+
 	if pp := c.CentersInDimension(0); pp[0] != 1 || pp[1] != 4 {
 		t.Errorf("Expected [1 4] as centers in dimension 0, got %v", pp)
 	}
