@@ -1,3 +1,3 @@
-module github.com/muesli/clusters
+module github.com/tushar-zomato/clusters
 
 go 1.18
