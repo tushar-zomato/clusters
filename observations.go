@@ -33,6 +33,17 @@ type WeightedObservation struct {
 	weight int
 }
 
+func NewObservation(c Coordinates, weight int) WeightedObservation {
+	if weight <= 0 {
+		weight = 1
+	}
+
+	return WeightedObservation{
+		c:      c,
+		weight: weight,
+	}
+}
+
 // Coordinates implements the Observation interface for a plain set of float64
 // coordinates
 func (o WeightedObservation) Coordinates() Coordinates {
