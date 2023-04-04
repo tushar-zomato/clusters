@@ -27,7 +27,7 @@ func TestCenter(t *testing.T) {
 	}
 
 	if m[0] != 3.625 || m[1] != 2.3125 {
-		t.Errorf("Expected coordinates [3 2], got %v", m)
+		t.Errorf("Expected coordinates [3.625 2.3125], got %v", m)
 	}
 }
 
@@ -39,7 +39,7 @@ func TestAverageDistance(t *testing.T) {
 
 	d := AverageDistance(o[0], o[1:])
 	if d != 18.5 {
-		t.Errorf("Expected average distance of 12.5, got %v", d)
+		t.Errorf("Expected average distance of 18.5, got %v", d)
 	}
 
 	d = AverageDistance(o[1], Observations{o[1]})
