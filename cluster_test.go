@@ -96,3 +96,33 @@ func TestClusters(t *testing.T) {
 		t.Errorf("Expected empty cluster 1, found %d observations", len(c[0].Observations))
 	}
 }
+
+func TestFarApartClusters(t *testing.T) {
+	var o Observations
+	o = append(o, WeightedObservation{c: Coordinates{1, 1}, weight: 1})
+	o = append(o, WeightedObservation{c: Coordinates{3, 2}, weight: 1})
+	o = append(o, WeightedObservation{c: Coordinates{5, 3}, weight: 1})
+	o = append(o, WeightedObservation{c: Coordinates{10, 3}, weight: 1})
+	o = append(o, WeightedObservation{c: Coordinates{5, 19}, weight: 1})
+	o = append(o, WeightedObservation{c: Coordinates{21, 13}, weight: 1})
+	o = append(o, WeightedObservation{c: Coordinates{8, 9}, weight: 1})
+	o = append(o, WeightedObservation{c: Coordinates{7, 1}, weight: 1})
+
+	cFADistTotal := 0.0
+	cDistTotal := 0.0
+	for i := 0; i < 50; i++ {
+		cFA, _ := NewFarApart(4, o)
+		for j := 1; j < 4; j++ {
+			cFADistTotal += cFA[j-1].Center.Distance(cFA[j].Center)
+		}
+
+		c, _ := New(4, o)
+		for j := 1; j < 4; j++ {
+			cDistTotal += c[j-1].Center.Distance(c[j].Center)
+		}
+	}
+
+	if cDistTotal > cFADistTotal {
+		t.Errorf("Expected far apart distance to be more, found FA: %f Regular: %f", cFADistTotal, cDistTotal)
+	}
+}

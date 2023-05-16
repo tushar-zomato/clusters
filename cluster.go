@@ -41,6 +41,52 @@ func New(k int, dataset Observations) (Clusters, error) {
 	return c, nil
 }
 
+// NewFarApart initializes seeds to be far apart instead of initializing the seeds randomly
+func NewFarApart(k int, dataset Observations) (Clusters, error) {
+	var c Clusters
+	if len(dataset) == 0 || len(dataset[0].Coordinates()) == 0 {
+		return c, fmt.Errorf("there must be at least one dimension in the data set")
+	}
+
+	if k == 0 {
+		return c, fmt.Errorf("k must be greater than 0")
+	}
+
+	c = make([]Cluster, k)
+	c[0] = Cluster{
+		Center: dataset[rand.Intn(len(dataset))].Coordinates(),
+	}
+
+	d2 := make([]float64, len(dataset))
+	for ii := 1; ii < k; ii++ {
+		var sum float64
+		for jj, p := range dataset {
+			minDistance := dataset[0].Coordinates().Distance(p.Coordinates())
+			for kk := 1; kk < ii; kk++ {
+				dist := dataset[kk].Coordinates().Distance(p.Coordinates())
+				if dist < minDistance {
+					minDistance = dist
+				}
+			}
+
+			d2[jj] = minDistance * minDistance
+			sum += d2[jj]
+		}
+
+		target := rand.Float64() * sum
+		jj := 0
+		for sum = d2[0]; sum < target; sum += d2[jj] {
+			jj++
+		}
+
+		c[ii] = Cluster{
+			Center: dataset[jj].Coordinates(),
+		}
+	}
+
+	return c, nil
+}
+
 // Append adds an observation to the Cluster
 func (c *Cluster) Append(point Observation) {
 	c.Observations = append(c.Observations, point)
